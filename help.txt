@@ -1,0 +1,44 @@
+Conceptually
+
+struct Spring {
+	point* cp; // pointer to a connected point
+	point* cv; // pointer to the connected point's velocity
+	double rest_length; // rest length of this spring
+}
+
+struct point {
+	double x;
+	double y;
+	double z;
+
+	std::vector< Spring > springs;
+}
+
+Each point keeps track of their own list of springs
+
+Here is the pseudo-code version of what I have in computeAcceleration:
+
+// points
+f_hook[8][8][8]; // Hook Forces
+f_damping[8][8][8]; // Damping Forces
+f_forceField[8][8][8]; // Force Field
+f_final[8][8][8]
+
+for(int i = 0; i <= 7; ++i) {
+	for(int j = 0; j <= 7; ++j) {
+		for(int k = 0; k <= 7; ++k) {
+			// go through each connected neighbor
+			for(int l = 0; l < jello->p[i][j][k].springs.size(); ++l) {
+				A = jello->p[i][j][k]
+				B = jello->p[i][j][k].springs[l].cp
+				// compute f_hook_ab
+				f_hook[i][j][k] += f_hook_ab // accumulate result
+			}			
+			compute f_damping[i][j][k] using 3D damping equation
+			compute f_forceField[i][j][k] using trilinear interpolation
+			compute f_final[i][j][k] = f_hook[i][j][k] + f_damping[i][j][k] + f_forceField[i][j][k]
+			compute a[i][j][k] = f_final[i][j][k] / (jello->mass * 512); // 512 points in total
+		}
+	}
+}
+return a;

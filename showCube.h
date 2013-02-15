@@ -1,9 +1,8 @@
 /*
-
-  USC/Viterbi/Computer Science
-  "Jello Cube" Assignment 1 starter code
-
-*/
+ * Author: Barney Hsiao
+ * Date: Feb 14, 2013
+ * USC/Viterbi/Computer Science
+ */
 
 
 #ifndef _SHOWCUBE_H_

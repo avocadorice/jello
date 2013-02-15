@@ -1,9 +1,8 @@
 /*
-
-USC/Viterbi/Computer Science
-"Jello Cube" Assignment 1 starter code
-
-*/
+ * Author: Barney Hsiao
+ * Date: Feb 14, 2013
+ * USC/Viterbi/Computer Science
+ */
 
 #include "jello.h"
 #include "input.h"
@@ -29,7 +28,7 @@ void saveScreenshot(int windowWidth, int windowHeight, char *filename)
 	if (filename == NULL)
 		return;
 
-// Allocate a picture buffer 
+	// Allocate a picture buffer 
 	Pic * in = pic_alloc(windowWidth, windowHeight, 3, NULL);
 
 	printf("File to save to: %s\n", filename);
@@ -294,7 +293,9 @@ void readWorld (char * fileName, struct world * jello)
 	fclose(file);
 	
 	/* load bitmap */
-	jello->textureImage = loadBitmap("texture/checkers.ppm");
+	if(!textureDisabled) {
+		jello->textureImage = loadBitmap((char*)texturePath.c_str());
+	}
 }
 
 /* writes the world parameters to a world file on disk*/

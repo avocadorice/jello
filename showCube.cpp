@@ -1,10 +1,10 @@
 /*
+ * Author: Barney Hsiao
+ * Date: Feb 14, 2013
+ * USC/Viterbi/Computer Science
+ */
 
-USC/Viterbi/Computer Science
-"Jello Cube" Assignment 1 starter code
-
-*/
-
+#include <iostream>
 #include "jello.h"
 #include "showCube.h"
 
@@ -78,41 +78,7 @@ void showCube(struct world * jello)
       glVertex3f(jello->p[ip][jp][kp].x,jello->p[ip][jp][kp].y,jello->p[ip][jp][kp].z);\
     }\
 
-	if (texture) {
-		glPushAttrib(GL_CURRENT_BIT | GL_TEXTURE_BIT);
-		glEnable( GL_TEXTURE_2D );
-		glDisable(GL_LIGHTING);
-		glBindTexture( GL_TEXTURE_2D, jello->textureId );
-		// glColor3f(1.f, 1.f, 1.f);
-		
-		// face == face of a cube
-		// 1 = bottom, 2 = front, 3 = left, 4 = right, 5 = far, 6 = top
-		for (face=1; face <= 6; face++) {
-			if ((face==1) || (face==3) || (face==5))
-				faceFactor=-1; // flip orientation
-			else
-				faceFactor=1;
-			
-			for (j=1; j<=7; j++) {
-				if (faceFactor > 0)
-					glFrontFace(GL_CCW); // the usual definition of front face
-				else
-					glFrontFace(GL_CW); // flip definition of orientation
-				
-				glBegin(GL_TRIANGLE_STRIP);
-				for (i=0; i<=7; i++) {
-					glTexCoord2d(1.0 * i / 7, 1.0 * j / 7);
-					glVertex3d(NODE(face,i,j).x, NODE(face,i,j).y, NODE(face,i,j).z);
-					glTexCoord2d(1.0 * i / 7, (1.0 * j-1) / 7);
-					glVertex3d(NODE(face,i,j-1).x, NODE(face,i,j-1).y, NODE(face,i,j-1).z);
-				}
-				glEnd();
-			}
-		}
-		glEnd();
-		glPopAttrib();
-	}
-	else if (viewingMode==0) // render wireframe
+ 	if (viewingMode==0) // render wireframe
 	{
 		glLineWidth(1);
 		glPointSize(5);
@@ -186,79 +152,162 @@ void showCube(struct world * jello)
 					}
 					glEnd();
 				}
-				glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);
 	}
-	else {
-		glPolygonMode(GL_FRONT, GL_FILL); 
+	else { // viewingMode == 1
+		// if texture is on
+		if(!textureDisabled && texture) {
+			glPushAttrib(GL_CURRENT_BIT | GL_TEXTURE_BIT);
+			glBindTexture( GL_TEXTURE_2D, jello->textureId );
+			glEnable( GL_TEXTURE_2D );
+			glPolygonMode(GL_FRONT, GL_FILL); 
 
-		for (face=1; face <= 6; face++) 
-		// face == face of a cube
-		// 1 = bottom, 2 = front, 3 = left, 4 = right, 5 = far, 6 = top
-		{
-			if ((face==1) || (face==3) || (face==5))
-				faceFactor=-1; // flip orientation
-			else
-				faceFactor=1;
-
-
-			for (i=0; i <= 7; i++) // reset buffers
-				for (j=0; j <= 7; j++)
+			for (face=1; face <= 6; face++) 
+			// face == face of a cube
+			// 1 = bottom, 2 = front, 3 = left, 4 = right, 5 = far, 6 = top
 			{
-				normal[i][j].x=0;normal[i][j].y=0;normal[i][j].z=0;
-				counter[i][j]=0;
-			}
-
-			/* process triangles, accumulate normals for Gourad shading */
-
-			for (i=0; i <= 6; i++)
-				for (j=0; j <= 6; j++) // process block (i,j)
-				{
-					pDIFFERENCE(NODE(face,i+1,j),NODE(face,i,j),r1); // first triangle
-					pDIFFERENCE(NODE(face,i,j+1),NODE(face,i,j),r2);
-					CROSSPRODUCTp(r1,r2,r3); pMULTIPLY(r3,faceFactor,r3);
-					pNORMALIZE(r3);
-					pSUM(normal[i+1][j],r3,normal[i+1][j]);
-					counter[i+1][j]++;
-					pSUM(normal[i][j+1],r3,normal[i][j+1]);
-					counter[i][j+1]++;
-					pSUM(normal[i][j],r3,normal[i][j]);
-					counter[i][j]++;
-
-					pDIFFERENCE(NODE(face,i,j+1),NODE(face,i+1,j+1),r1); // second triangle
-					pDIFFERENCE(NODE(face,i+1,j),NODE(face,i+1,j+1),r2);
-					CROSSPRODUCTp(r1,r2,r3); pMULTIPLY(r3,faceFactor,r3);
-					pNORMALIZE(r3);
-					pSUM(normal[i+1][j],r3,normal[i+1][j]);
-					counter[i+1][j]++;
-					pSUM(normal[i][j+1],r3,normal[i][j+1]);
-					counter[i][j+1]++;
-					pSUM(normal[i+1][j+1],r3,normal[i+1][j+1]);
-					counter[i+1][j+1]++;
-				}
-
-			/* the actual rendering */
-			for (j=1; j<=7; j++) 
-			{
-
-				if (faceFactor  > 0)
-					glFrontFace(GL_CCW); // the usual definition of front face
+				if ((face==1) || (face==3) || (face==5))
+					faceFactor=-1; // flip orientation
 				else
-					glFrontFace(GL_CW); // flip definition of orientation
+					faceFactor=1;
 
-				glBegin(GL_TRIANGLE_STRIP);
-				for (i=0; i<=7; i++)
+
+				for (i=0; i <= 7; i++) // reset buffers
+					for (j=0; j <= 7; j++)
 				{
-					glNormal3f(normal[i][j].x / counter[i][j],normal[i][j].y / counter[i][j],
-						normal[i][j].z / counter[i][j]);
-					glVertex3f(NODE(face,i,j).x, NODE(face,i,j).y, NODE(face,i,j).z);
-					glNormal3f(normal[i][j-1].x / counter[i][j-1],normal[i][j-1].y/ counter[i][j-1],
-						normal[i][j-1].z / counter[i][j-1]);
-					glVertex3f(NODE(face,i,j-1).x, NODE(face,i,j-1).y, NODE(face,i,j-1).z);
+					normal[i][j].x=0;normal[i][j].y=0;normal[i][j].z=0;
+					counter[i][j]=0;
 				}
-				glEnd();
-			}
-		}  
-	} // end for loop over faces
+
+				/* process triangles, accumulate normals for Gourad shading */
+
+				for (i=0; i <= 6; i++)
+					for (j=0; j <= 6; j++) // process block (i,j)
+					{
+						pDIFFERENCE(NODE(face,i+1,j),NODE(face,i,j),r1); // first triangle
+						pDIFFERENCE(NODE(face,i,j+1),NODE(face,i,j),r2);
+						CROSSPRODUCTp(r1,r2,r3); pMULTIPLY(r3,faceFactor,r3);
+						pNORMALIZE(r3);
+						pSUM(normal[i+1][j],r3,normal[i+1][j]);
+						counter[i+1][j]++;
+						pSUM(normal[i][j+1],r3,normal[i][j+1]);
+						counter[i][j+1]++;
+						pSUM(normal[i][j],r3,normal[i][j]);
+						counter[i][j]++;
+
+						pDIFFERENCE(NODE(face,i,j+1),NODE(face,i+1,j+1),r1); // second triangle
+						pDIFFERENCE(NODE(face,i+1,j),NODE(face,i+1,j+1),r2);
+						CROSSPRODUCTp(r1,r2,r3); pMULTIPLY(r3,faceFactor,r3);
+						pNORMALIZE(r3);
+						pSUM(normal[i+1][j],r3,normal[i+1][j]);
+						counter[i+1][j]++;
+						pSUM(normal[i][j+1],r3,normal[i][j+1]);
+						counter[i][j+1]++;
+						pSUM(normal[i+1][j+1],r3,normal[i+1][j+1]);
+						counter[i+1][j+1]++;
+					}
+
+				/* the actual rendering */
+				for (j=1; j<=7; j++) 
+				{
+
+					if (faceFactor  > 0)
+						glFrontFace(GL_CCW); // the usual definition of front face
+					else
+						glFrontFace(GL_CW); // flip definition of orientation
+
+					glBegin(GL_TRIANGLE_STRIP);
+					for (i=0; i<=7; i++)
+					{
+						glTexCoord2f(1.0 * i / 7, 1.0 * j / 7);
+						glNormal3f(normal[i][j].x / counter[i][j],normal[i][j].y / counter[i][j],
+							normal[i][j].z / counter[i][j]);
+						glVertex3f(NODE(face,i,j).x, NODE(face,i,j).y, NODE(face,i,j).z);
+					
+						glTexCoord2f(1.0 * i / 7, (1.0 * j-1) / 7);
+						glNormal3f(normal[i][j-1].x / counter[i][j-1],normal[i][j-1].y/ counter[i][j-1],
+							normal[i][j-1].z / counter[i][j-1]);
+						glVertex3f(NODE(face,i,j-1).x, NODE(face,i,j-1).y, NODE(face,i,j-1).z);
+					}
+					glEnd();
+				}
+			} // end for loop over faces
+		
+			glPopAttrib();
+		}
+		else { // texture off
+			glPolygonMode(GL_FRONT, GL_FILL); 
+
+			for (face=1; face <= 6; face++) 
+			// face == face of a cube
+			// 1 = bottom, 2 = front, 3 = left, 4 = right, 5 = far, 6 = top
+			{
+				if ((face==1) || (face==3) || (face==5))
+					faceFactor=-1; // flip orientation
+				else
+					faceFactor=1;
+
+
+				for (i=0; i <= 7; i++) // reset buffers
+					for (j=0; j <= 7; j++)
+				{
+					normal[i][j].x=0;normal[i][j].y=0;normal[i][j].z=0;
+					counter[i][j]=0;
+				}
+
+				/* process triangles, accumulate normals for Gourad shading */
+
+				for (i=0; i <= 6; i++)
+					for (j=0; j <= 6; j++) // process block (i,j)
+					{
+						pDIFFERENCE(NODE(face,i+1,j),NODE(face,i,j),r1); // first triangle
+						pDIFFERENCE(NODE(face,i,j+1),NODE(face,i,j),r2);
+						CROSSPRODUCTp(r1,r2,r3); pMULTIPLY(r3,faceFactor,r3);
+						pNORMALIZE(r3);
+						pSUM(normal[i+1][j],r3,normal[i+1][j]);
+						counter[i+1][j]++;
+						pSUM(normal[i][j+1],r3,normal[i][j+1]);
+						counter[i][j+1]++;
+						pSUM(normal[i][j],r3,normal[i][j]);
+						counter[i][j]++;
+
+						pDIFFERENCE(NODE(face,i,j+1),NODE(face,i+1,j+1),r1); // second triangle
+						pDIFFERENCE(NODE(face,i+1,j),NODE(face,i+1,j+1),r2);
+						CROSSPRODUCTp(r1,r2,r3); pMULTIPLY(r3,faceFactor,r3);
+						pNORMALIZE(r3);
+						pSUM(normal[i+1][j],r3,normal[i+1][j]);
+						counter[i+1][j]++;
+						pSUM(normal[i][j+1],r3,normal[i][j+1]);
+						counter[i][j+1]++;
+						pSUM(normal[i+1][j+1],r3,normal[i+1][j+1]);
+						counter[i+1][j+1]++;
+					}
+
+				/* the actual rendering */
+				for (j=1; j<=7; j++) 
+				{
+
+					if (faceFactor  > 0)
+						glFrontFace(GL_CCW); // the usual definition of front face
+					else
+						glFrontFace(GL_CW); // flip definition of orientation
+
+					glBegin(GL_TRIANGLE_STRIP);
+					for (i=0; i<=7; i++)
+					{
+						glNormal3f(normal[i][j].x / counter[i][j],normal[i][j].y / counter[i][j],
+							normal[i][j].z / counter[i][j]);
+						glVertex3f(NODE(face,i,j).x, NODE(face,i,j).y, NODE(face,i,j).z);
+
+						glNormal3f(normal[i][j-1].x / counter[i][j-1],normal[i][j-1].y/ counter[i][j-1],
+							normal[i][j-1].z / counter[i][j-1]);
+						glVertex3f(NODE(face,i,j-1).x, NODE(face,i,j-1).y, NODE(face,i,j-1).z);
+					}
+					glEnd();
+				}
+			} // end for loop over faces
+		} // end-else
+	}
 	glFrontFace(GL_CCW);
 }
 

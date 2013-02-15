@@ -1,12 +1,8 @@
 /*
-
-USC/Viterbi/Computer Science
-"Jello Cube" Assignment 1 starter code
-
-Your name:
-<write your name here>
-
-*/
+ * Author: Barney Hsiao
+ * Date: Feb 14, 2013
+ * USC/Viterbi/Computer Science
+ */
 
 #include "jello.h"
 #include "showCube.h"
@@ -33,22 +29,27 @@ int sprite=0;
 
 namespace Input {
 	// these variables control what is displayed on screen
-	int shear=0, bend=0, structural=1, pause=0, viewingMode=0, saveScreenToFile=1;
-	int texture=0;
+	int shear=0, bend=0, structural=1, pause=0, viewingMode=0, saveScreenToFile=1, texture=0;
 }
 
+bool textureDisabled;
+std::string texturePath;
+
+// boundary check for points
 bool particleExists(int i, int j, int k) {
 	return (0 <= i && i <= 7 && 0 <= j && j <= 7 && 0 <= k && k <= 7);
 }
 
+// the jello object
 struct world jello;
+
+// counter and buffer used to measure frame rate
 PerformanceCounter counter;
 std::deque<double> fpsBuffer;
 
 int windowWidth, windowHeight;
 
-void myinit()
-{
+void myinit() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(90.0,1.0,0.01,1000.0);
@@ -63,32 +64,34 @@ void myinit()
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
 		
-	GLuint myTexture;
-	Pic* img = jello.textureImage;
-	// allocate a texture name
-	glGenTextures( 1, &myTexture );
-	// select our current texture
-	glBindTexture( GL_TEXTURE_2D, myTexture );
+	if(!textureDisabled) {
+		GLuint myTexture;
+		Pic* img = jello.textureImage;
+		// allocate a texture name
+		glGenTextures( 1, &myTexture );
+		// select our current texture
+		glBindTexture( GL_TEXTURE_2D, myTexture );
 	
-	// when texture area is small, bilinear filter the closest mipmap
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-	                 GL_LINEAR_MIPMAP_NEAREST );
-	// when texture area is large, bilinear filter the original
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		// when texture area is small, bilinear filter the closest mipmap
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		                 GL_LINEAR_MIPMAP_NEAREST );
+		// when texture area is large, bilinear filter the original
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	
-	// the texture wraps over at the edges (repeat)
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+		// the texture wraps over at the edges (repeat)
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 	
-	// build our texture mipmaps
-	gluBuild2DMipmaps( GL_TEXTURE_2D, 3, img->nx, img->ny,
-	                   GL_RGB, GL_UNSIGNED_BYTE, img->pix );
-	pic_free(img);
-	jello.textureId = myTexture;
+		// build our texture mipmaps
+		gluBuild2DMipmaps( GL_TEXTURE_2D, 3, img->nx, img->ny,
+		                   GL_RGB, GL_UNSIGNED_BYTE, img->pix );
+		
+		pic_free(img);
+		jello.textureId = myTexture;
+	}
 }
 
-void reshape(int w, int h) 
-{
+void reshape(int w, int h) {
 // Prevent a divide by zero, when h is zero.
 // You can't make a window of zero height.
 	if(h == 0)
@@ -112,8 +115,7 @@ void reshape(int w, int h)
 	glutPostRedisplay();
 }
 
-void display()
-{
+void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -234,8 +236,7 @@ double getAvgFps() {
 	return sum / fpsBuffer.size();
 }
 
-void doIdle()
-{
+void doIdle() {
 	counter.StopCounter();
 	fpsBuffer.push_front(1.0 / counter.GetElapsedTime());
 	if(fpsBuffer.size() > 64) // limit buffer size
@@ -286,73 +287,78 @@ void doIdle()
 }
 
 namespace mymath {
-// math
-double norm(const Vec3d& a) {
-	return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
-}
+	// math
+	double norm(const Vec3d& a) {
+		return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+	}
 
-double normalize(const Vec3d& src, Vec3d* dest) {
-	double length = norm(src);
-	dest->x = src.x / length;
-	dest->y = src.y / length;
-	dest->z = src.z / length;
-}
+	double normalize(const Vec3d& src, Vec3d* dest) {
+		double length = norm(src);
+		dest->x = src.x / length;
+		dest->y = src.y / length;
+		dest->z = src.z / length;
+	}
 
-void make(double x, double y, double z, Vec3d* dest) {
-	dest->x = x; 
-	dest->y = y;
-	dest->z = z;
-}
+	void make(double x, double y, double z, Vec3d* dest) {
+		dest->x = x; 
+		dest->y = y;
+		dest->z = z;
+	}
 
-void copy(const Vec3d& src, Vec3d* dest) {
-	dest->x = src.x;
-	dest->y = src.y;
-	dest->z = src.z;
-}
+	void copy(const Vec3d& src, Vec3d* dest) {
+		dest->x = src.x;
+		dest->y = src.y;
+		dest->z = src.z;
+	}
 
-double dot(const Vec3d& a, const Vec3d& b) {
-	return a.x * b.x + a.y * b.y + a.z * b.z;
-}
+	double dot(const Vec3d& a, const Vec3d& b) {
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
 
-void plus(const Vec3d& src1, const Vec3d& src2, Vec3d* dest) {
-	dest->x = src1.x + src2.x;
-	dest->y = src1.y + src2.y;
-	dest->z = src1.z + src2.z;
-}
+	void plus(const Vec3d& src1, const Vec3d& src2, Vec3d* dest) {
+		dest->x = src1.x + src2.x;
+		dest->y = src1.y + src2.y;
+		dest->z = src1.z + src2.z;
+	}
 
-void minus(const Vec3d& src1, const Vec3d& src2, Vec3d* dest) {
-	dest->x = src1.x - src2.x;
-	dest->y = src1.y - src2.y;
-	dest->z = src1.z - src2.z;
-}
+	void minus(const Vec3d& src1, const Vec3d& src2, Vec3d* dest) {
+		dest->x = src1.x - src2.x;
+		dest->y = src1.y - src2.y;
+		dest->z = src1.z - src2.z;
+	}
 
-void times(const Vec3d& src, double scalar, Vec3d* dest) {
-	dest->x = src.x * scalar;
-	dest->y = src.y * scalar;
-	dest->z = src.z * scalar;
-}
+	void times(const Vec3d& src, double scalar, Vec3d* dest) {
+		dest->x = src.x * scalar;
+		dest->y = src.y * scalar;
+		dest->z = src.z * scalar;
+	}
 
-void divide(const Vec3d& src, double scalar, Vec3d* dest) {
-	dest->x = src.x / scalar;
-	dest->y = src.y / scalar;
-	dest->z = src.z / scalar;
+	void divide(const Vec3d& src, double scalar, Vec3d* dest) {
+		dest->x = src.x / scalar;
+		dest->y = src.y / scalar;
+		dest->z = src.z / scalar;
+	}
 }
-}
-
-int main (int argc, char ** argv)
-{
-	if (argc<2)
+int main (int argc, char ** argv) {
+	if (argc < 2)
 	{  
 		printf ("Oops! You didn't say the jello world file!\n");
-		printf ("Usage: %s [worldfile]\n", argv[0]);
+		printf ("Usage: %s world_file <texture_file>\n", argv[0]);
 		exit(0);
 	}
 
-	readWorld(argv[1],&jello);
+	if(argc == 3) {
+		textureDisabled = false;
+		texturePath = argv[2];
+	}
+	else {
+		textureDisabled = true;
+	}
+	readWorld(argv[1], &jello);
 
 	glutInit(&argc,argv);
 
-/* double buffered window, use depth testing, 640x480 */
+	/* double buffered window, use depth testing, 640x480 */
 	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
 	windowWidth = 640;

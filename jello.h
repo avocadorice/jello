@@ -1,9 +1,8 @@
 /*
-
-USC/Viterbi/Computer Science
-"Jello Cube" Assignment 1 starter code
-
-*/
+ * Author: Barney Hsiao
+ * Date: Feb 14, 2013
+ * USC/Viterbi/Computer Science
+ */
 
 #ifndef _JELLO_H_
 #define _JELLO_H_
@@ -61,6 +60,9 @@ namespace Input {
 	// these variables control what is displayed on the screen
 	extern int shear, bend, structural, pause, viewingMode, saveScreenToFile, texture;
 }
+
+extern bool textureDisabled;
+extern std::string texturePath;
 
 struct world
 {

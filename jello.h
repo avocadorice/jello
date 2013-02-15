@@ -42,8 +42,6 @@ struct point {
 	double x;
 	double y;
 	double z;
-//	std::vector< std::pair<point*,double> > springs;
-	std::vector< Spring > springs;
 	
 	point() : x(0.0), y(0.0), z(0.0) {}
 	point(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
@@ -51,11 +49,10 @@ struct point {
 };
 
 struct Spring {
-	point* cp; // pointer to a connected point
-	point* cv; // pointer to the connected point's velocity
+	int i, j, k; // connected point indices
 	double rest_length; // rest length of this spring
 	
-	Spring(point* p, point* v, double rlen) : cp(p), cv(v), rest_length(rlen) {}
+	Spring(int _i, int _j, int _k, double rlen) : i(_i), j(_j), k(_k), rest_length(rlen) {}
 };
 
 typedef point Vec3d; // not to be confused with vector...
@@ -81,6 +78,8 @@ struct world
 	struct point * forceField; // pointer to the array of values of the force field
 	struct point p[8][8][8]; // position of the 512 control points
 	struct point v[8][8][8]; // velocities of the 512 control points
+	struct point pCollission[8][8][8];
+	bool inBox[8][8][8];
 	
 	Pic* textureImage;
 	GLuint textureId;
@@ -162,9 +161,8 @@ CROSSPRODUCT( (vector1).x, (vector1).y, (vector1).z,\
 	(dest).y = (src).y * (scalar);\
 	(dest).z = (src).z * (scalar);
 
-#endif
-
 // math
+namespace mymath {
 double norm(const Vec3d& a);
 double normalize(const Vec3d& src, Vec3d* dest);
 void make(double x, double y, double z, Vec3d* dest);
@@ -174,3 +172,6 @@ void plus(const Vec3d& src1, const Vec3d& src2, Vec3d* dest);
 void minus(const Vec3d& src1, const Vec3d& src2, Vec3d* dest);
 void times(const Vec3d& src, double scalar, Vec3d* dest);
 void divide(const Vec3d& src, double scalar, Vec3d* dest);
+}
+
+#endif

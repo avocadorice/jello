@@ -9,6 +9,7 @@ USC/Viterbi/Computer Science
 #include "input.h"
 #include <iostream>
 
+// f: filename
 Pic* loadBitmap(char* f) {
 	if(f == NULL) return NULL;
 	
@@ -18,15 +19,6 @@ Pic* loadBitmap(char* f) {
 		Pic * in = pic_alloc(nx, ny, 3, NULL);
 		in = ppm_read(f, in);
 		return in;
-		// if(in) {
-		// 	for(int i = 0; i < in->nx; ++i) {
-		// 		for(int j = 0; j < in->ny; ++j) {
-		// 			std::cout << (int)PIC_PIXEL(in, i, j, 0) << " ";
-		// 			std::cout << (int)PIC_PIXEL(in, i, j, 1) << " ";
-		// 			std::cout << (int)PIC_PIXEL(in, i, j, 2) << "\n";
-		// 		}
-		// 	}
-		// }
 	}
 	return NULL;
 }
@@ -301,92 +293,8 @@ void readWorld (char * fileName, struct world * jello)
 	
 	fclose(file);
 	
-
-	/* hard-coded spring connections */
-	const double structural_spring_length = 1.0 / 7;
-	const double shear_spring_length_type1 = sqrt(2) * structural_spring_length;
-	const double shear_spring_length_type2 = sqrt(3) * structural_spring_length;
-	const double bend_spring_length = 2.0 / 7;
-
-	for(i = 0; i <= 7; ++i) {
-		for(j = 0; j <= 7; ++j) {
-			for(k = 0; k <= 7; ++k) {
-				//Structural
-				if(particleExists(i+1, j, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j][k], &jello->v[i+1][j][k], structural_spring_length));
-				if(particleExists(i-1, j, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j][k], &jello->v[i-1][j][k], structural_spring_length));				
-				if(particleExists(i, j+1, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j+1][k], &jello->v[i][j+1][k], structural_spring_length));				
-				if(particleExists(i, j-1, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j-1][k], &jello->v[i][j-1][k], structural_spring_length));
-				if(particleExists(i, j, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j][k+1], &jello->v[i][j][k+1], structural_spring_length));
-				if(particleExists(i, j, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j][k-1], &jello->v[i][j][k-1], structural_spring_length));
-
-				//Shear
-				if(particleExists(i, j+1, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j+1][k+1], &jello->v[i][j+1][k+1], shear_spring_length_type1));
-				if(particleExists(i, j+1, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j+1][k-1], &jello->v[i][j+1][k-1], shear_spring_length_type1));
-				if(particleExists(i, j-1, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j-1][k+1], &jello->v[i][j-1][k+1], shear_spring_length_type1));
-				if(particleExists(i, j-1, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j-1][k-1], &jello->v[i][j-1][k-1], shear_spring_length_type1));
-				if(particleExists(i+1, j, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j][k+1], &jello->v[i+1][j][k+1], shear_spring_length_type1));
-				if(particleExists(i+1, j, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j][k-1], &jello->v[i+1][j][k-1], shear_spring_length_type1));
-				if(particleExists(i-1, j, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j][k+1], &jello->v[i-1][j][k+1], shear_spring_length_type1));
-				if(particleExists(i-1, j, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j][k-1], &jello->v[i-1][j][k-1], shear_spring_length_type1));
-				if(particleExists(i+1, j+1, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j+1][k], &jello->v[i+1][j+1][k], shear_spring_length_type1));
-				if(particleExists(i+1, j-1, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j-1][k], &jello->v[i+1][j-1][k], shear_spring_length_type1));
-				if(particleExists(i-1, j+1, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j+1][k], &jello->v[i-1][j+1][k], shear_spring_length_type1));
-				if(particleExists(i-1, j-1, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j-1][k], &jello->v[i-1][j-1][k], shear_spring_length_type1));
-				
-				if(particleExists(i+1, j+1, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j+1][k+1], &jello->v[i+1][j+1][k+1], shear_spring_length_type2));
-				if(particleExists(i+1, j+1, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j+1][k-1], &jello->v[i+1][j+1][k-1], shear_spring_length_type2));
-				if(particleExists(i+1, j-1, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j-1][k+1], &jello->v[i+1][j-1][k+1], shear_spring_length_type2));
-				if(particleExists(i+1, j-1, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+1][j-1][k-1], &jello->v[i+1][j-1][k-1], shear_spring_length_type2));
-				if(particleExists(i-1, j+1, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j+1][k+1], &jello->v[i-1][j+1][k+1], shear_spring_length_type2));
-				if(particleExists(i-1, j+1, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j+1][k-1], &jello->v[i-1][j+1][k-1], shear_spring_length_type2));
-				if(particleExists(i-1, j-1, k+1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j-1][k+1], &jello->v[i-1][j-1][k+1], shear_spring_length_type2));
-				if(particleExists(i-1, j-1, k-1))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-1][j-1][k-1], &jello->v[i-1][j-1][k-1], shear_spring_length_type2));
-					
-				//Bend
-				if(particleExists(i+2, j, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i+2][j][k], &jello->v[i+2][j][k], bend_spring_length));
-				if(particleExists(i-2, j, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i-2][j][k], &jello->v[i-2][j][k], bend_spring_length));
-				if(particleExists(i, j+2, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j+2][k], &jello->v[i][j+2][k], bend_spring_length));
-				if(particleExists(i, j-2, k))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j-2][k], &jello->v[i][j-2][k], bend_spring_length));
-				if(particleExists(i, j, k+2))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j][k+2], &jello->v[i][j][k+2], bend_spring_length));
-				if(particleExists(i, j, k-2))
-					jello->p[i][j][k].springs.push_back(Spring(&jello->p[i][j][k-2], &jello->v[i][j][k-2], bend_spring_length));
-			}
-		}
-	}
-	
 	/* load bitmap */
-	jello->textureImage = loadBitmap("checkers.ppm");
+	jello->textureImage = loadBitmap("texture/checkers.ppm");
 }
 
 /* writes the world parameters to a world file on disk*/

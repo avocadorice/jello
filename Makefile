@@ -4,7 +4,7 @@
 LIBRARIES = -framework OpenGL -framework GLUT 
 
 COMPILER = g++
-COMPILERFLAGS = -g
+COMPILERFLAGS = -O2
 
 all: jello createWorld
 

@@ -33,7 +33,7 @@ int sprite=0;
 
 namespace Input {
 	// these variables control what is displayed on screen
-	int shear=0, bend=0, structural=1, pause=0, viewingMode=0, saveScreenToFile=0;
+	int shear=0, bend=0, structural=1, pause=0, viewingMode=0, saveScreenToFile=1;
 	int texture=0;
 }
 
@@ -263,7 +263,7 @@ void doIdle()
 	if (saveScreenToFile==1)
 	{
 		saveScreenshot(windowWidth, windowHeight, s);
-		saveScreenToFile=0; // save only once, change this if you want continuos image generation (i.e. animation)
+		//saveScreenToFile=0; // save only once, change this if you want continuos image generation (i.e. animation)
 		sprite++;
 	}
 
@@ -273,16 +273,19 @@ void doIdle()
 	}
 
 	if (pause == 0) {
-		// insert code which appropriately performs one step of the cube simulation:
-		if(jello.integrator[0] == 'R')
-			RK4(&jello);
-		else if(jello.integrator[0] == 'E')
-			Euler(&jello);
+		// one step of the cube simulation:
+		for(int i = 0; i < jello.n; ++i) {
+			if(jello.integrator[0] == 'R')
+				RK4(&jello);
+			else if(jello.integrator[0] == 'E')
+				Euler(&jello);
+		}
 	}
 
 	glutPostRedisplay();
 }
 
+namespace mymath {
 // math
 double norm(const Vec3d& a) {
 	return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
@@ -333,6 +336,7 @@ void divide(const Vec3d& src, double scalar, Vec3d* dest) {
 	dest->x = src.x / scalar;
 	dest->y = src.y / scalar;
 	dest->z = src.z / scalar;
+}
 }
 
 int main (int argc, char ** argv)

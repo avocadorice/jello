@@ -124,6 +124,7 @@ void keyboardFunc (unsigned char key, int x, int y)
 
 		case 'v':
 		viewingMode = 1 - viewingMode;
+		texture = 0;
 		break;
 
 		case 'h':
@@ -158,6 +159,7 @@ void keyboardFunc (unsigned char key, int x, int y)
 		
 		case 't':
 		texture = 1 - texture;
+		viewingMode = 0;
 		break;
 	}
 }

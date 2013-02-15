@@ -78,7 +78,7 @@ void showCube(struct world * jello)
       glVertex3f(jello->p[ip][jp][kp].x,jello->p[ip][jp][kp].y,jello->p[ip][jp][kp].z);\
     }\
 
- 	if (viewingMode==0) // render wireframe
+ 	if (viewingMode==0 && texture==0) // render wireframe
 	{
 		glLineWidth(1);
 		glPointSize(5);
